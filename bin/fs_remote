@@ -1,0 +1,43 @@
+#!/bin/bash
+[ -z "$1" ] && exit 1
+REMOTE_DIR="/"
+[ ! -z "$2" ] && REMOTE_DIR="$2"
+USER=`id -un`
+ROOT_MOUNT_DIR=/Users/$USER/mnt
+SVR_INFO=`echo $1 | cut -d':' -f1 | xargs`
+PORT=`echo $1 | awk -F\: '{print "-p "$2}' | xargs`
+IS_USR=`echo $1 | awk -F\@ '{print $2}' | xargs`
+[ -z "$IS_USR" ] && USR="root" || USR=`echo $1 | awk -F\@ '{print $1}' | xargs`
+[ -z "$REMOTE_DIR" ] && REMOTE_DIR="/"
+HOST=`echo $SVR_INFO | awk -F\@  '{if ($2=="") print $1; else print $2}'`
+#echo $HOST
+R=`ping -t 1 $HOST &>/dev/null; echo $?`
+[ "$R" -ne "0" ] && read -p "Host is unreachable! Proceed?[Y/n]: " -n 1 -r
+#echo 
+[[ $REPLY =~ ^[Nn]$ ]] && exit 1
+C=0
+for dir in  `find $ROOT_MOUNT_DIR -maxdepth 1 -name "$SVR_INFO*" | sort` ; do
+let "C++"
+[ "$(mount | grep $dir)" ] && continue
+[ "$(ls -A $dir)" ] && continue || DIR_NAME=`basename $dir`; break
+done
+[ -z "$DIR_NAME" ] && [ "$C" -ne "0" ] && DIR_NAME=$SVR_INFO"_"$C || DIR_NAME=$SVR_INFO
+MOUNT_DIR=$ROOT_MOUNT_DIR/$DIR_NAME
+mkdir -p $MOUNT_DIR
+umount $MOUNT_DIR &>/dev/null
+
+sshfs_opts1="-o auto_cache -o cache_timeout=115200 -o attr_timeout=115200   \
+-o entry_timeout=1200 -o max_readahead=90000  \
+-o no_remote_lock"
+sshfs_opts2="-o auto_cache,reconnect,defer_permissions,noappledouble  \ 
+-o nolocalcaches,no_readahead"
+
+VOL_NAME=$DIR_NAME
+[ ! -z "$3" ] && VOL_NAME=$3
+sshfs $PORT $USR@$HOST:$REMOTE_DIR $MOUNT_DIR $sshfs_opts1 -o volname=$VOL_NAME
+sleep 2
+[ -d $MOUNT_DIR/var/www ] && find $MOUNT_DIR/var/www &> /dev/null &
+[ -d $MOUNT_DIR/root ] && find $MOUNT_DIR/root &> /dev/null & 
+[ -d $MOUNT_DIR/usr/local/src ] && find $MOUNT_DIR/usr/local/src &> /dev/null & 
+open $MOUNT_DIR
+

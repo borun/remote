@@ -1,0 +1,13 @@
+#Remote
+Right now it is based on **Zsh**. I have made this tiny tool for my **MacBook** to ease my ssh session management.It is better if you manage your remote servers with public key authentication. You may have one password protected key to log into your servers.
+
+Anyway, download this directly and unzip or untar in your preferred location.You can also clone this using git clone command.
+
+Add the path of the completion directory in ~/.zshrc,
+`fpath=(<remote_path>/comppletion/ $fpath)`
+
+In case your zsh completion module is not installed, add this line and restart the terminal
+`autoload -Uz compinit && compinit`
+
+This tool is built with ssh and sshfs.
+

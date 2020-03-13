@@ -1,0 +1,8 @@
+#compdef _remote remote
+
+_remote() {
+    compadd $(dir=$(remote --dir); ls $dir/../hosts )
+    compadd $(cat ~/.ssh/known_hosts | cut -d" " -f1 | cut -d, -f1 | sed 's/[^a-z0-9\.:]//g'  | sort  | uniq| tail -$LINES | sort -r)
+}
+
+compdef _remote remote

@@ -1,0 +1,33 @@
+#!/bin/bash
+
+############## GET THE REAL PATH OF THE SCRIPT ##########
+
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  REMOTE_CMD_DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
+  SOURCE="$(readlink "$SOURCE")"
+  [[ $SOURCE != /* ]] && SOURCE="$REMOTE_CMD_DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+REMOTE_CMD_DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
+cd $REMOTE_CMD_DIR
+#######################################################
+
+function usage() {
+echo "Usage:$0: host_address[:port]|<host_filename> -s|-f"
+echo "	-s: ssh connection"
+echo "	-f: sshfs connection"
+
+exit 1
+}
+
+[ "$#" -eq "1" ] && [[ $1 == "--dir" ]] && echo $REMOTE_CMD_DIR &&  exit 0
+
+[ -z "$2" ] && usage && exit 1
+
+[ "$2" != "-s" -a  "$2" != "-f" ] &&  echo "Unknown flag!" && usage
+[ "$2" = "-s" ] && exe=ssh_remote || exe=fs_remote
+if [ -f ../hosts/$1 ]; then
+./$exe $(echo `<../hosts/$1` $1 | xargs)
+else
+./$exe "root@$1"
+fi

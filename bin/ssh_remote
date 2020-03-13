@@ -1,0 +1,10 @@
+#!/bin/bash
+[ -z "$1" ] && exit 1
+[[ "$1" == *"@"* ]] && usr=${1%@*}
+tmp=${1#*@};host=${tmp%%/*};host=${host%:*}
+[[ "$1" == *":"* ]] && port=${1#*:}
+
+[ ! -z "$port" ] && port="-p $port"
+[ -z "$usr" ] && usr=root
+ssh $port $usr@$host
+
