@@ -26,18 +26,15 @@ MOUNT_DIR=$ROOT_MOUNT_DIR/$DIR_NAME
 mkdir -p $MOUNT_DIR
 umount $MOUNT_DIR &>/dev/null
 
-sshfs_opts1="-o auto_cache -o cache_timeout=115200 -o attr_timeout=115200   \
--o entry_timeout=1200 -o max_readahead=90000  \
--o no_remote_lock"
-sshfs_opts2="-o auto_cache,reconnect,defer_permissions,noappledouble  \ 
--o nolocalcaches,no_readahead"
+sshfs_opts1="-o auto_cache -o cache_timeout=115200 -o attr_timeout=115200 -o entry_timeout=1200 -o max_readahead=90000 -o no_remote_lock"
+sshfs_opts2="-o auto_cache,reconnect,defer_permissions,noappledouble -o nolocalcaches,no_readahead"
 
 VOL_NAME=$DIR_NAME
 [ ! -z "$3" ] && VOL_NAME=$3
-sshfs $PORT $USR@$HOST:$REMOTE_DIR $MOUNT_DIR $sshfs_opts1 -o volname=$VOL_NAME
+sshfs $PORT $USR@$HOST:$REMOTE_DIR $MOUNT_DIR $sshfs_opts2 -o volname=$VOL_NAME
 sleep 2
-[ -d $MOUNT_DIR/var/www ] && find $MOUNT_DIR/var/www &> /dev/null &
-[ -d $MOUNT_DIR/root ] && find $MOUNT_DIR/root &> /dev/null & 
-[ -d $MOUNT_DIR/usr/local/src ] && find $MOUNT_DIR/usr/local/src &> /dev/null & 
+#[ -d $MOUNT_DIR/var/www ] && find $MOUNT_DIR/var/www &> /dev/null &
+#[ -d $MOUNT_DIR/root ] && find $MOUNT_DIR/root &> /dev/null & 
+#[ -d $MOUNT_DIR/usr/local/src ] && find $MOUNT_DIR/usr/local/src &> /dev/null & 
 open $MOUNT_DIR
 
